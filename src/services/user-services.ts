@@ -23,3 +23,18 @@ export async function createUser(data: UserParams): Promise<User> {
   );
   return newUser;
 }
+
+export async function validateCredentials(
+  credentials: UserParams
+): Promise<User> {
+  const { username, password } = credentials;
+  const user = await userDB.getUserByUsername(username);
+
+  const isValid = await bcrypt.compare(password, user?.password || "");
+
+  if (!user || !isValid) {
+    throw new ApiError("Credenciales incorrectas", 400);
+  }
+
+  return user;
+}
