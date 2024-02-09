@@ -4,8 +4,8 @@ import * as userDB from "../data/user-data";
 import bcrypt from "bcrypt";
 
 export async function createUser(data: UserParams): Promise<User> {
-  const { username, password, name, email, created_at } = data;
 
+  const { username, password, name, email, created_at } = data;
   const user = await userDB.getUserByUsername(username);
 
   if (user) {
@@ -38,3 +38,12 @@ export async function validateCredentials(
 
   return user;
 }
+
+export async function updateUser(
+  user_id: number,
+  updates: Partial<User>
+): Promise<User> {
+  return await userDB.updateUser(user_id, updates);
+}
+
+;

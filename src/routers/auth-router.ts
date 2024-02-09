@@ -1,8 +1,13 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import { createUser, validateCredentials } from "../services/user-services";
+import {
+  createUser,
+  updateUser,
+  validateCredentials,
+} from "../services/user-services";
 import { userSchema } from "../models/user";
 import { validationHandler } from "../middlewares/validation";
+import { authenticateHandler } from "../middlewares/authenticate";
 
 const authRouter = express.Router();
 
@@ -14,7 +19,7 @@ authRouter.post(
   async (req, res, next) => {
     try {
       const newUser = await createUser(req.body);
-      const payload = { userId: newUser.user_id };
+      const payload = { user_id: newUser.user_id };
       const token = jwt.sign(payload, jwtSecret, { expiresIn: "15m" });
       const newData = {
         user_id: newUser.user_id,
@@ -38,10 +43,27 @@ authRouter.post(
 authRouter.post("/login", async (req, res, next) => {
   try {
     const user = await validateCredentials(req.body);
-    const payload = { userId: user.user_id };
+    const payload = { user_id: user.user_id };
     const token = jwt.sign(payload, jwtSecret, { expiresIn: "5m" });
 
     res.json({ ok: true, message: "Login exitoso", data: { token } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.patch("/me", authenticateHandler, async (req, res, next) => {
+  try {
+    const user_id = Number(req.params["user_id"]);
+    const { username, ...updates } = req.body;
+
+    const updatedUser = await updateUser(user_id, updates);
+
+    res.status(200).json({
+      ok: true,
+      message: "Usuario actualizado exitosamente",
+      data: updatedUser,
+    });
   } catch (error) {
     next(error);
   }
