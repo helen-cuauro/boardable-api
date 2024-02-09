@@ -33,7 +33,7 @@ export async function updateUser(
   const queryParams = [];
 
   Object.entries(updates).forEach(([key, value]) => {
-    if (value !== undefined && value !== null)  {
+    if (value !== undefined && value !== null) {
       if (queryParams.length > 0) {
         query += ",";
       }
@@ -46,5 +46,19 @@ export async function updateUser(
   query += ` WHERE user_id = $${queryParams.length} RETURNING *`;
 
   const result = await db.query(query, queryParams);
+  return result.rows[0];
+}
+
+export async function deleteUser(user_id: number): Promise<void> {
+  const query = "DELETE FROM Users WHERE user_id = $1";
+  const queryParams = [user_id];
+  await db.query(query, queryParams);
+}
+
+export async function getUserById(user_id: number) {
+  const result = await query("SELECT * FROM users WHERE user_id = $1", [
+    user_id,
+  ]);
+
   return result.rows[0];
 }

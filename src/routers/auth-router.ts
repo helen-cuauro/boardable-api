@@ -2,6 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import {
   createUser,
+  deleteUser,
   updateUser,
   validateCredentials,
 } from "../services/user-services";
@@ -20,7 +21,7 @@ authRouter.post(
     try {
       const newUser = await createUser(req.body);
       const payload = { user_id: newUser.user_id };
-      const token = jwt.sign(payload, jwtSecret, { expiresIn: "15m" });
+      const token = jwt.sign(payload, jwtSecret, { expiresIn: "1h" });
       const newData = {
         user_id: newUser.user_id,
         username: newUser.username,
@@ -44,7 +45,7 @@ authRouter.post("/login", async (req, res, next) => {
   try {
     const user = await validateCredentials(req.body);
     const payload = { user_id: user.user_id };
-    const token = jwt.sign(payload, jwtSecret, { expiresIn: "5m" });
+    const token = jwt.sign(payload, jwtSecret, { expiresIn: "1h" });
 
     res.json({ ok: true, message: "Login exitoso", data: { token } });
   } catch (error) {
@@ -52,21 +53,32 @@ authRouter.post("/login", async (req, res, next) => {
   }
 });
 
-authRouter.patch("/me", authenticateHandler, async (req, res, next) => {
-  try {
-    const user_id = Number(req.params["user_id"]);
-    const { username, ...updates } = req.body;
-
-    const updatedUser = await updateUser(user_id, updates);
-
-    res.status(200).json({
-      ok: true,
-      message: "Usuario actualizado exitosamente",
-      data: updatedUser,
-    });
-  } catch (error) {
-    next(error);
-  }
+authRouter.delete("/me", authenticateHandler, async (req, res) => {
+  const user_id = Number(req.user_id);
+  await deleteUser(user_id);
+  res.json({ ok: true });
 });
+
+authRouter.patch(
+  "/me",
+  authenticateHandler,
+  validationHandler(userSchema.partial()),
+  async (req, res, next) => {
+    try {
+      const user_id = Number(req.user_id);
+      const { username, ...updates } = req.body;
+
+      const updatedUser = await updateUser(user_id, { ...updates, username });
+
+      res.status(200).json({
+        ok: true,
+        message: "Usuario actualizado exitosamente",
+        data: updatedUser,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 export default authRouter;

@@ -4,7 +4,6 @@ import * as userDB from "../data/user-data";
 import bcrypt from "bcrypt";
 
 export async function createUser(data: UserParams): Promise<User> {
-
   const { username, password, name, email, created_at } = data;
   const user = await userDB.getUserByUsername(username);
 
@@ -46,4 +45,10 @@ export async function updateUser(
   return await userDB.updateUser(user_id, updates);
 }
 
-;
+export async function deleteUser(user_id: number): Promise<void> {
+  return await userDB.deleteUser(user_id);
+}
+
+export async function getUserById(user_id: number): Promise<User | undefined> {
+  return await userDB.getUserById(user_id);
+}
