@@ -1,5 +1,10 @@
 import express from "express";
-import { createBoard, getBoardByUserId } from "../services/board-services";
+import {
+  createBoard,
+  deleteBoard,
+  getBoardByUserId,
+  updateBoard,
+} from "../services/board-services";
 import { authenticateHandler } from "../middlewares/authenticate";
 import { validationHandler } from "../middlewares/validation";
 import { boardSchema } from "../models/board";
@@ -42,7 +47,7 @@ boardRouter.post(
   }
 );
 
-// Ruta protegida que solo devuelve los tableros cuando el usuario está autenticado
+
 boardRouter.get("/boards", authenticateHandler, async (req, res, next) => {
   const sort = req.query["sort"] as string | undefined;
   const user_id = req.user_id;
@@ -66,5 +71,43 @@ boardRouter.get("/boards", authenticateHandler, async (req, res, next) => {
     return res.status(500).json({ ok: false, error: "Internal server error" });
   }
 });
+
+boardRouter.delete(
+  "/boards/:board_id",
+  authenticateHandler,
+  async (req, res) => {
+    const board_id = parseInt(req.params["board_id"], 10);
+    await deleteBoard(board_id);
+    return res.json({ ok: true, message: "Tablero eliminado exitosamente" });
+  }
+);
+
+boardRouter.patch(
+  "/boards/:board_id",
+  authenticateHandler,
+  validationHandler(boardSchema.partial()),
+  async (req, res, next) => {
+    try {
+      const board_id = parseInt(req.params["board_id"], 10);
+      const { title } = req.body;
+
+      if (!title) {
+        return res
+          .status(400)
+          .json({ ok: false, error: "Falta el nuevo título del tablero" });
+      }
+      const updatedBoard = await updateBoard(board_id, title);
+
+      res.status(200).json({
+        ok: true,
+        message: "tablero actualizado exitosamente",
+        data: updatedBoard,
+      });
+    } catch (error) {
+      next(error);
+    }
+    return;
+  }
+);
 
 export default boardRouter;

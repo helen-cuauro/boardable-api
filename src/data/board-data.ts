@@ -34,6 +34,22 @@ export async function getBoardsByUserId(
     return result.rows;
   } catch (error) {
     console.error("Error fetching boards:", error);
-    throw error; // Re-lanza el error para que se maneje en un nivel superior si es necesario
+    throw error;
   }
+}
+
+export async function deleteBoard(board_id: number): Promise<void> {
+  const query = "DELETE FROM boards WHERE board_id = $1";
+  const queryParams = [board_id];
+  await db.query(query, queryParams);
+}
+
+export async function updateBoard(
+  board_id: number,
+  title: string
+): Promise<Board> {
+  let query = "UPDATE boards SET title = $1 WHERE board_id = $2 RETURNING *";
+  const queryParams = [title, board_id];
+  const result = await db.query(query, queryParams);
+  return result.rows[0];
 }

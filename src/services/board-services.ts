@@ -23,3 +23,16 @@ export async function getBoardByUserId(
 ): Promise<Board[]> {
   return await boardDB.getBoardsByUserId(user_id, sort);
 }
+
+
+export async function deleteBoard(user_id: number): Promise<void> {
+  return await boardDB.deleteBoard(user_id);
+}
+
+
+export async function updateBoard(
+  board_id: number,
+  title: string
+): Promise<Board> {
+  return await boardDB.updateBoard(board_id, title);
+}

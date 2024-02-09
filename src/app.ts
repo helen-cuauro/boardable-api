@@ -3,6 +3,7 @@ import cors from "cors";
 import authRouter from "./routers/auth-router";
 import boardRouter from "./routers/board-router";
 import errorHandler from "./middlewares/error";
+import listRouter from "./routers/list-router";
 export const app = express();
 
 const corsOptions = {
@@ -13,4 +14,5 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use("/", authRouter);
 app.use("/", boardRouter);
+app.use("/", listRouter);
 app.use(errorHandler);

@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       user_id?: number;
+      board_id?: number;
     }
   }
 }
@@ -27,11 +28,13 @@ export function authenticateHandler(
   try {
     const payload = jwt.verify(token, jwtSecret) as {
       user_id: number;
+      board_id: number;
       iat: number;
       exp: number;
     };
 
     req.user_id = payload.user_id;
+    req.board_id = payload.board_id;
     next();
   } catch (error) {
     return next(new ApiError("No autorizado", 401));
