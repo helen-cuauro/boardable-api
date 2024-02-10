@@ -8,6 +8,7 @@ declare global {
     interface Request {
       user_id?: number;
       board_id?: number;
+      list_id?: number;
     }
   }
 }
@@ -29,12 +30,14 @@ export function authenticateHandler(
     const payload = jwt.verify(token, jwtSecret) as {
       user_id: number;
       board_id: number;
+      list_id?: number;
       iat: number;
       exp: number;
     };
 
     req.user_id = payload.user_id;
     req.board_id = payload.board_id;
+    req.list_id = payload.list_id;
     next();
   } catch (error) {
     return next(new ApiError("No autorizado", 401));
